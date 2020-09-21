@@ -6,14 +6,24 @@ using System.Threading.Tasks;
 
 namespace TimePlaning
 {
-    public class State
+    public class Context
     {
-        public State(int _money = 0, bool _hasLoan = false)
+        private Dictionary<String, int> data = new Dictionary<string, int>();
+        public void Set(string key, int value)
         {
-            money = _money;
-            hasLoan = _hasLoan;
+            if (data.ContainsKey(key))
+            {
+                data[key] = value;
+            }
+            else
+            {
+                data.Add(key, value);
+            }
         }
-        public bool hasLoan = false;
-        public int money = 1000;
+
+        public int Get(string key)
+        {
+            return data[key];
+        }
     }
 }

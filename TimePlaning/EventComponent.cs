@@ -9,9 +9,9 @@ namespace TimePlaning
     interface EventComponent
     {
         //через какой промежуток времени запланировать событие.
-        int getTime();
+        int GetTime();
         string getDiscription();
         // выполняет событие, возвращает сообщение для лога
-        string invoke(State state);
+        string Invoke(Context state);
     }
 }

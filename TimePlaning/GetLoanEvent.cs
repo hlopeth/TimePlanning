@@ -6,18 +6,17 @@ using System.Threading.Tasks;
 
 namespace TimePlaning
 {
-    class NullEvent : EventComponent
+    class GetLoanEvent : EventComponent
     {
         private readonly int time;
 
-        public NullEvent(int time)
+        public GetLoanEvent(int time)
         {
             this.time = time;
         }
-
         public string getDiscription()
         {
-            return "null event";
+            return "Взять кредит";
         }
 
         public int GetTime()
@@ -27,7 +26,9 @@ namespace TimePlaning
 
         public string Invoke(Context state)
         {
-            return null;
+            int loans = state.Get("loans");
+            state.Set("loans", loans + 1);
+            return "Получен кредит";
         }
     }
 }

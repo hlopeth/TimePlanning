@@ -6,28 +6,21 @@ using System.Threading.Tasks;
 
 namespace TimePlaning
 {
-    class NullEvent : EventComponent
+    class CloseEvent : EventComponent
     {
-        private readonly int time;
-
-        public NullEvent(int time)
-        {
-            this.time = time;
-        }
-
         public string getDiscription()
         {
-            return "null event";
+            return "close event";
         }
 
         public int GetTime()
         {
-            return time;
+            throw new NotImplementedException();
         }
 
         public string Invoke(Context state)
         {
-            return null;
+            throw new NotImplementedException();
         }
     }
 }
