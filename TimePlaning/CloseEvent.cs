@@ -13,12 +13,22 @@ namespace TimePlaning
             return "close event";
         }
 
+        public Pool GetReciver()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Pool GetSender()
+        {
+            throw new NotImplementedException();
+        }
+
         public int GetTime()
         {
             throw new NotImplementedException();
         }
 
-        public string Invoke(Context state)
+        public string Invoke(Context state, List<EventComponent> outEvents)
         {
             throw new NotImplementedException();
         }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TimePlaning
 {
-    class Pool
+    public class Pool
     {
         private List<EventComponent>[] eventQueues;
         public readonly int endModelTime;
@@ -136,10 +136,10 @@ namespace TimePlaning
             semaphore.Release();
         }
 
-        public void DoEvent(EventComponent closestEvent)
+        public void DoEvent(EventComponent closestEvent, List<EventComponent> outEvents)
         {
             semaphore.WaitOne();
-            var message = closestEvent.Invoke(context);
+            var message = closestEvent.Invoke(context, outEvents);
             if(!(closestEvent is NullEvent))
             {
                 log.Add(message);

@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace TimePlaning
 {
-    interface EventComponent
+    public interface EventComponent
     {
+        Pool GetSender();
+        Pool GetReciver();
         //через какой промежуток времени запланировать событие.
         int GetTime();
         string getDiscription();
         // выполняет событие, возвращает сообщение для лога
-        string Invoke(Context state);
+        string Invoke(Context state, List<EventComponent> outEvents);
     }
 }

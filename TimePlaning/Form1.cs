@@ -13,7 +13,7 @@ namespace TimePlaning
 {
     public partial class Form1 : Form
     {
-        Pool[] pools;
+        static Pool[] pools;
         public Form1()
         {
             InitializeComponent();
@@ -24,6 +24,9 @@ namespace TimePlaning
 
             bankPool.context.Set("money", 1000);
             bankPool.context.Set("loans", 0);
+            buierPool.context.Set("quants", 0);
+            shopPool.context.Set("quants", 0);
+            bankPool.context.Set("quants", 0);
 
             pools = new Pool[] { buierPool, shopPool, bankPool};
 
@@ -42,19 +45,21 @@ namespace TimePlaning
 
         private void updateUI(object sender, EventArgs e)
         { 
-            labelBuierTime.Text = pools[0].Time.ToString();
-            labelShopTime.Text = pools[1].Time.ToString();
-            labelBankTime.Text = pools[2].Time.ToString();
+            labelBuierTime.Text = BuierPool().Time.ToString();
+            labelShopTime.Text = ShopPool().Time.ToString();
+            labelBankTime.Text = BankPool().Time.ToString();
 
-            pools[2].semaphore.WaitOne();
-            labelBankMoney.Text = pools[2].context.Get("money").ToString() + "$";
-            labelHasLoan.Text = pools[2].context.Get("loans").ToString();
-            pools[2].semaphore.Release();
+            BankPool().semaphore.WaitOne();
+            labelBankMoney.Text = BankPool().context.Get("money").ToString() + "$";
+            labelHasLoan.Text = BankPool().context.Get("loans").ToString();
+            BankPool().semaphore.Release();
 
-            showMessages(listBoxBuierMessages, pools[0]);
-            showMessages(listBoxShopMessages, pools[1]);
-            showMessages(listBoxBankMessages, pools[2]);
-            showLog(listBoxBankLog, pools[2]);
+            showMessages(listBoxBuierMessages, BuierPool());
+            showMessages(listBoxShopMessages, ShopPool());
+            showMessages(listBoxBankMessages, BankPool());
+            showLog(listBoxBuierLog, BuierPool());
+            showLog(listBoxShopLog, ShopPool());
+            showLog(listBoxBankLog, BankPool());
         }
 
         private void showLog(ListBox listBox, Pool pool)
@@ -89,6 +94,8 @@ namespace TimePlaning
             List<EventComponent> closestEvents = new List<EventComponent>();
             List<int> closestEventsQueueIndices = new List<int>();
 
+            Random rnd = new Random();
+
             //отправляем нулевые сообщения что бы показать что мы готовы
             foreach (var otherPool in pools)
             {
@@ -97,6 +104,14 @@ namespace TimePlaning
 
             while (pool.Time < pool.endModelTime && !pool.shouldClose)
             {
+                var quants = context.Get("quants");
+                if (quants == 0)
+                {
+                    continue;
+                }
+                context.Set("quants", quants - 1);
+
+
                 if(!pool.HasEventOnEachLine())
                 {
                     continue;
@@ -110,19 +125,40 @@ namespace TimePlaning
                     var closestEvent = closestEvents[i];
                     pool.RemoveEvent(queueIndex, closestEvent);
                     pool.Time = closestEvent.GetTime();
-                    pool.DoEvent(closestEvent);
+                    List<EventComponent> newEvents = new List<EventComponent>();
+                    pool.DoEvent(closestEvent, newEvents);
+                    foreach(var newEvent in newEvents)
+                    {
+                        sendEvent(newEvent.GetSender(), newEvent.GetReciver(), newEvent);
+                    }
                 }
-
+                
                 //рассылаем нулевые сообщения
-                foreach(var otherPool in pools)
+                foreach (var otherPool in pools)
                 {
                     sendEvent(pool, otherPool, new NullEvent(pool.Time + lookahead));
                 }
-                Thread.Sleep(1000);
+                int sleepTime = Convert.ToInt32(rnd.NextDouble() * 1000) + 500;
+                Thread.Sleep(sleepTime);
             }
         }
 
-        private void sendEvent(Pool sender, Pool reciver, EventComponent evt)
+        private Pool BuierPool()
+        {
+            return pools[0];
+        }
+
+        private Pool ShopPool()
+        {
+            return pools[1];
+        }
+
+        private Pool BankPool()
+        {
+            return pools[2];
+        }
+
+        public static void sendEvent(Pool sender, Pool reciver, EventComponent evt)
         {
             int queueIndex = Array.IndexOf<Pool>(pools, sender);
             reciver.AddEvent(queueIndex, evt);
@@ -140,16 +176,33 @@ namespace TimePlaning
             var buierPool = pools[0];
             var bankPool = pools[2];
             int moneyToGet = Convert.ToInt32(nudMoneyToGet.Value);
-            int planedTime = bankPool.Time + 10;
-            sendEvent(buierPool, bankPool, new GetMoneyEvent(planedTime, moneyToGet));
+            int planedTime = bankPool.Time + 5;
+            sendEvent(buierPool, bankPool, new GetMoneyEvent(planedTime, moneyToGet, buierPool, bankPool));
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            var shopPool = pools[1];
-            var bankPool = pools[2];
-            int planedTime = bankPool.Time + 5;
-            sendEvent(shopPool, bankPool, new GetLoanEvent(planedTime));
+            int planedTime = ShopPool().Time + 2;
+            sendEvent(ShopPool(), BankPool(), new GetLoanEvent(planedTime, ShopPool(), BankPool()));
+        }
+
+        private void button_AddTimeBuier_Click(object sender, EventArgs e)
+        {
+            var quants = BuierPool().context.Get("quants");
+            BuierPool().context.Set("quants", quants + 1);
+        }
+
+        private void button_AddTimeShop_Click(object sender, EventArgs e)
+        {
+            var quants = ShopPool().context.Get("quants");
+            ShopPool().context.Set("quants", quants + 1);
+        }
+
+        private void button_AddTimeBank_Click(object sender, EventArgs e)
+        {
+
+            var quants = BankPool().context.Get("quants");
+            BankPool().context.Set("quants", quants + 1);
         }
     }
 }

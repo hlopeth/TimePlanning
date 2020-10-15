@@ -47,14 +47,21 @@
             this.groupBoxShopLoan = new System.Windows.Forms.GroupBox();
             this.labelHasLoan = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.groupBox7 = new System.Windows.Forms.GroupBox();
+            this.listBoxBankLog = new System.Windows.Forms.ListBox();
             this.groupBox15 = new System.Windows.Forms.GroupBox();
             this.listBoxBankMessages = new System.Windows.Forms.ListBox();
             this.groupBox12 = new System.Windows.Forms.GroupBox();
             this.labelBankMoney = new System.Windows.Forms.Label();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.labelBankTime = new System.Windows.Forms.Label();
-            this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.listBoxBankLog = new System.Windows.Forms.ListBox();
+            this.button_AddTimeBuier = new System.Windows.Forms.Button();
+            this.button_AddTimeShop = new System.Windows.Forms.Button();
+            this.button_AddTimeBank = new System.Windows.Forms.Button();
+            this.groupBox8 = new System.Windows.Forms.GroupBox();
+            this.listBoxShopLog = new System.Windows.Forms.ListBox();
+            this.groupBox10 = new System.Windows.Forms.GroupBox();
+            this.listBoxBuierLog = new System.Windows.Forms.ListBox();
             this.groupBox1.SuspendLayout();
             this.groupBox16.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nudMoneyToGet)).BeginInit();
@@ -65,16 +72,20 @@
             this.groupBox5.SuspendLayout();
             this.groupBoxShopLoan.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox7.SuspendLayout();
             this.groupBox15.SuspendLayout();
             this.groupBox12.SuspendLayout();
             this.groupBox6.SuspendLayout();
-            this.groupBox7.SuspendLayout();
+            this.groupBox8.SuspendLayout();
+            this.groupBox10.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
             // 
             this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Controls.Add(this.groupBox10);
+            this.groupBox1.Controls.Add(this.button_AddTimeBuier);
             this.groupBox1.Controls.Add(this.groupBox16);
             this.groupBox1.Controls.Add(this.groupBox13);
             this.groupBox1.Controls.Add(this.groupBox4);
@@ -89,19 +100,20 @@
             // 
             this.groupBox16.Controls.Add(this.button2);
             this.groupBox16.Controls.Add(this.nudMoneyToGet);
-            this.groupBox16.Location = new System.Drawing.Point(331, 25);
+            this.groupBox16.Location = new System.Drawing.Point(331, 48);
             this.groupBox16.Name = "groupBox16";
-            this.groupBox16.Size = new System.Drawing.Size(322, 72);
+            this.groupBox16.Size = new System.Drawing.Size(126, 72);
             this.groupBox16.TabIndex = 4;
             this.groupBox16.TabStop = false;
             this.groupBox16.Text = "Снять деньги";
             // 
             // button2
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button2.Location = new System.Drawing.Point(241, 19);
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.button2.Location = new System.Drawing.Point(6, 45);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 20);
+            this.button2.Size = new System.Drawing.Size(114, 20);
             this.button2.TabIndex = 1;
             this.button2.Text = "Снять";
             this.button2.UseVisualStyleBackColor = true;
@@ -112,8 +124,13 @@
             this.nudMoneyToGet.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.nudMoneyToGet.Location = new System.Drawing.Point(6, 19);
+            this.nudMoneyToGet.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
             this.nudMoneyToGet.Name = "nudMoneyToGet";
-            this.nudMoneyToGet.Size = new System.Drawing.Size(229, 20);
+            this.nudMoneyToGet.Size = new System.Drawing.Size(114, 20);
             this.nudMoneyToGet.TabIndex = 0;
             // 
             // groupBox13
@@ -158,6 +175,8 @@
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.groupBox8);
+            this.groupBox2.Controls.Add(this.button_AddTimeShop);
             this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.groupBox14);
             this.groupBox2.Controls.Add(this.groupBox5);
@@ -170,9 +189,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(331, 27);
+            this.button1.Location = new System.Drawing.Point(331, 48);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(161, 67);
+            this.button1.Size = new System.Drawing.Size(126, 23);
             this.button1.TabIndex = 0;
             this.button1.Text = "Оформить кредит";
             this.button1.UseVisualStyleBackColor = true;
@@ -239,6 +258,7 @@
             // 
             this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox3.Controls.Add(this.button_AddTimeBank);
             this.groupBox3.Controls.Add(this.groupBox7);
             this.groupBox3.Controls.Add(this.groupBox15);
             this.groupBox3.Controls.Add(this.groupBox12);
@@ -250,6 +270,25 @@
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Банк";
+            // 
+            // groupBox7
+            // 
+            this.groupBox7.Controls.Add(this.listBoxBankLog);
+            this.groupBox7.Location = new System.Drawing.Point(463, 16);
+            this.groupBox7.Name = "groupBox7";
+            this.groupBox7.Size = new System.Drawing.Size(215, 136);
+            this.groupBox7.TabIndex = 8;
+            this.groupBox7.TabStop = false;
+            this.groupBox7.Text = "Вывод";
+            // 
+            // listBoxBankLog
+            // 
+            this.listBoxBankLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBoxBankLog.FormattingEnabled = true;
+            this.listBoxBankLog.Location = new System.Drawing.Point(3, 16);
+            this.listBoxBankLog.Name = "listBoxBankLog";
+            this.listBoxBankLog.Size = new System.Drawing.Size(209, 117);
+            this.listBoxBankLog.TabIndex = 0;
             // 
             // groupBox15
             // 
@@ -308,24 +347,73 @@
             this.labelBankTime.TabIndex = 0;
             this.labelBankTime.Text = "null";
             // 
-            // groupBox7
+            // button_AddTimeBuier
             // 
-            this.groupBox7.Controls.Add(this.listBoxBankLog);
-            this.groupBox7.Location = new System.Drawing.Point(337, 16);
-            this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(215, 136);
-            this.groupBox7.TabIndex = 8;
-            this.groupBox7.TabStop = false;
-            this.groupBox7.Text = "Вывод";
+            this.button_AddTimeBuier.Location = new System.Drawing.Point(331, 19);
+            this.button_AddTimeBuier.Name = "button_AddTimeBuier";
+            this.button_AddTimeBuier.Size = new System.Drawing.Size(126, 23);
+            this.button_AddTimeBuier.TabIndex = 6;
+            this.button_AddTimeBuier.Text = "Дать квант времени";
+            this.button_AddTimeBuier.UseVisualStyleBackColor = true;
+            this.button_AddTimeBuier.Click += new System.EventHandler(this.button_AddTimeBuier_Click);
             // 
-            // listBoxBankLog
+            // button_AddTimeShop
             // 
-            this.listBoxBankLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listBoxBankLog.FormattingEnabled = true;
-            this.listBoxBankLog.Location = new System.Drawing.Point(3, 16);
-            this.listBoxBankLog.Name = "listBoxBankLog";
-            this.listBoxBankLog.Size = new System.Drawing.Size(209, 117);
-            this.listBoxBankLog.TabIndex = 0;
+            this.button_AddTimeShop.Location = new System.Drawing.Point(331, 19);
+            this.button_AddTimeShop.Name = "button_AddTimeShop";
+            this.button_AddTimeShop.Size = new System.Drawing.Size(126, 23);
+            this.button_AddTimeShop.TabIndex = 8;
+            this.button_AddTimeShop.Text = "Дать квант времени";
+            this.button_AddTimeShop.UseVisualStyleBackColor = true;
+            this.button_AddTimeShop.Click += new System.EventHandler(this.button_AddTimeShop_Click);
+            // 
+            // button_AddTimeBank
+            // 
+            this.button_AddTimeBank.Location = new System.Drawing.Point(331, 19);
+            this.button_AddTimeBank.Name = "button_AddTimeBank";
+            this.button_AddTimeBank.Size = new System.Drawing.Size(126, 23);
+            this.button_AddTimeBank.TabIndex = 9;
+            this.button_AddTimeBank.Text = "Дать квант времени";
+            this.button_AddTimeBank.UseVisualStyleBackColor = true;
+            this.button_AddTimeBank.Click += new System.EventHandler(this.button_AddTimeBank_Click);
+            // 
+            // groupBox8
+            // 
+            this.groupBox8.Controls.Add(this.listBoxShopLog);
+            this.groupBox8.Location = new System.Drawing.Point(466, 19);
+            this.groupBox8.Name = "groupBox8";
+            this.groupBox8.Size = new System.Drawing.Size(215, 136);
+            this.groupBox8.TabIndex = 9;
+            this.groupBox8.TabStop = false;
+            this.groupBox8.Text = "Вывод";
+            // 
+            // listBoxShopLog
+            // 
+            this.listBoxShopLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBoxShopLog.FormattingEnabled = true;
+            this.listBoxShopLog.Location = new System.Drawing.Point(3, 16);
+            this.listBoxShopLog.Name = "listBoxShopLog";
+            this.listBoxShopLog.Size = new System.Drawing.Size(209, 117);
+            this.listBoxShopLog.TabIndex = 0;
+            // 
+            // groupBox10
+            // 
+            this.groupBox10.Controls.Add(this.listBoxBuierLog);
+            this.groupBox10.Location = new System.Drawing.Point(460, 19);
+            this.groupBox10.Name = "groupBox10";
+            this.groupBox10.Size = new System.Drawing.Size(215, 136);
+            this.groupBox10.TabIndex = 9;
+            this.groupBox10.TabStop = false;
+            this.groupBox10.Text = "Вывод";
+            // 
+            // listBoxBuierLog
+            // 
+            this.listBoxBuierLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.listBoxBuierLog.FormattingEnabled = true;
+            this.listBoxBuierLog.Location = new System.Drawing.Point(3, 16);
+            this.listBoxBuierLog.Name = "listBoxBuierLog";
+            this.listBoxBuierLog.Size = new System.Drawing.Size(209, 117);
+            this.listBoxBuierLog.TabIndex = 0;
             // 
             // Form1
             // 
@@ -351,12 +439,14 @@
             this.groupBoxShopLoan.ResumeLayout(false);
             this.groupBoxShopLoan.PerformLayout();
             this.groupBox3.ResumeLayout(false);
+            this.groupBox7.ResumeLayout(false);
             this.groupBox15.ResumeLayout(false);
             this.groupBox12.ResumeLayout(false);
             this.groupBox12.PerformLayout();
             this.groupBox6.ResumeLayout(false);
             this.groupBox6.PerformLayout();
-            this.groupBox7.ResumeLayout(false);
+            this.groupBox8.ResumeLayout(false);
+            this.groupBox10.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -388,6 +478,13 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.GroupBox groupBox7;
         private System.Windows.Forms.ListBox listBoxBankLog;
+        private System.Windows.Forms.Button button_AddTimeBuier;
+        private System.Windows.Forms.Button button_AddTimeShop;
+        private System.Windows.Forms.Button button_AddTimeBank;
+        private System.Windows.Forms.GroupBox groupBox10;
+        private System.Windows.Forms.ListBox listBoxBuierLog;
+        private System.Windows.Forms.GroupBox groupBox8;
+        private System.Windows.Forms.ListBox listBoxShopLog;
     }
 }
 
