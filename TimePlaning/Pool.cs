@@ -9,13 +9,15 @@ namespace TimePlaning
 {
     public class Pool
     {
-        private List<EventComponent>[] eventQueues;
+        private List<EventComponent> eventQueue;
         public readonly int endModelTime;
         public Context context;
         public Semaphore semaphore;
         private int maxPools;
         public bool shouldClose = false;
         private List<string> log = new List<string>();
+        private Dictionary<int, Context> savedContexts = new Dictionary<int, Context>();
+        private List<EventToTime> eventBacklog = new List<EventToTime>();
 
         private int _time;
         public int Time { 
@@ -41,51 +43,30 @@ namespace TimePlaning
             this.maxPools = maxPools;
             this.Time = 0;
 
-            eventQueues = new List<EventComponent>[maxPools];
-            for(int i = 0; i < maxPools; i++)
-            {
-                eventQueues[i] = new List<EventComponent>();
-            }
+            eventQueue = new List<EventComponent>();
         }
-
-        public bool HasEventOnEachLine()
-        {
-            bool everioneHasEvents = true;
-            semaphore.WaitOne();
-            foreach (var eventQueue in eventQueues)
-            {
-                if (eventQueue.Count() == 0)
-                    everioneHasEvents = false;
-            }
-            semaphore.Release();
-            return everioneHasEvents;
-        }
-
-        public void RemoveEvent(int queueIndex, EventComponent evt)
+        
+        public void RemoveEvent(EventComponent evt)
         {
             semaphore.WaitOne();
-            eventQueues[queueIndex].Remove(evt);
+            eventQueue.Remove(evt);
             semaphore.Release();
         }
 
-        public void AddEvent(int queueIndex, EventComponent evt)
+        public void AddEvent(EventComponent evt)
         {
             semaphore.WaitOne();
-            eventQueues[queueIndex].Add(evt);
+            eventQueue.Add(evt);
             semaphore.Release();
         }
 
-        public List<EventComponent>[] getEventQueues()
+        public List<EventComponent> getEventQueue()
         {
             semaphore.WaitOne();
-            List<EventComponent>[] result = new List<EventComponent>[maxPools];
-            for (int i = 0; i < maxPools; i++)
+            List<EventComponent> result = new List<EventComponent>();
+            foreach (var evt in eventQueue)
             {
-                result[i] = new List<EventComponent>();
-                foreach (var evt in eventQueues[i])
-                {
-                    result[i].Add(evt);
-                }
+                result.Add(evt);
             }
 
             semaphore.Release();
@@ -99,51 +80,74 @@ namespace TimePlaning
             semaphore.WaitOne();
             EventComponent closestEvent = null;
             //находим ближайший по времени ивент
-            for (int i = 0; i < eventQueues.Length; i++)
-            {
-                if(eventQueues[i].Count == 0)
-                {
-                    continue;
-                }
-
-                EventComponent minEvent = getMinEvent(eventQueues[i]);
-                if (closestEvent == null || minEvent.GetTime() < closestEvent.GetTime())
-                {
-                    closestEvent = minEvent;
-                    continue;
-                }
-            }
+            closestEvent = getMinEvent(eventQueue);
 
             if (closestEvent != null)
             {
                 //добавляем ивенты с временен как у ближайшего
-                for (int i = 0; i < eventQueues.Length; i++)
+                for (int i = 0; i < eventQueue.Count; i++)
                 {
-                    if (eventQueues[i].Count == 0)
+                    if (eventQueue[i].GetTime() == closestEvent.GetTime())
                     {
-                        continue;
+                        oClosestEvents.Add(eventQueue[i]);
+                        oClosestQueueIndices.Add(i);
                     }
-                    for (int j = 0; j < eventQueues[i].Count; j++)
-                    {
-                        if (eventQueues[i][j].GetTime() == closestEvent.GetTime())
-                        {
-                            oClosestEvents.Add(eventQueues[i][j]);
-                            oClosestQueueIndices.Add(i);
-                        }
-                    }
+                 
                 }
             }
             semaphore.Release();
         }
 
-        public void DoEvent(EventComponent closestEvent, List<EventComponent> outEvents)
+        internal void SaveState()
+        {
+            savedContexts[Time] = context.Clone();
+        }
+
+        internal void RevertToState(int time)
+        {
+            log.Add($"Откат ко временни {time}");
+            //восстанавливаем контекст
+            int maxTime = 0;
+            foreach(var row in savedContexts)
+            {
+                if(row.Key > maxTime && row.Key <= time)
+                {
+                    maxTime = row.Key;
+                }
+            }
+            context = savedContexts[maxTime];
+
+            int n = savedContexts.Keys.Max();
+            for(int i = maxTime + 1; i <= n; i++)
+            {
+                if(savedContexts.ContainsKey(i))
+                    savedContexts.Remove(i);
+            }
+
+            //восстанавливаем сообщения
+            List<EventToTime> revertedEvents = new List<EventToTime>();
+            foreach(var evtToTime in eventBacklog)
+            {
+                if (evtToTime.time > time)
+                    revertedEvents.Add(evtToTime);
+            }
+            foreach(var revertedEvent in revertedEvents)
+            {
+                eventBacklog.Remove(revertedEvent);
+                AddEvent(revertedEvent.evt);
+            }
+
+        }
+
+        public void DoEvent(EventComponent evt, List<EventComponent> outEvents)
         {
             semaphore.WaitOne();
-            var message = closestEvent.Invoke(context, outEvents);
-            if(!(closestEvent is NullEvent))
+            var message = evt.Invoke(context, outEvents);
+            if(!(evt is NullEvent))
             {
                 log.Add(message);
             }
+            eventBacklog.Add(new EventToTime(_time, evt));
             semaphore.Release();
         }
 
@@ -163,6 +167,10 @@ namespace TimePlaning
         //гарантируется что arr имеет хотя бы 1 элемент
         private EventComponent getMinEvent(List<EventComponent> arr)
         {
+            if(arr.Count == 0)
+            {
+                return null;
+            }
             EventComponent minEvent = arr[0];
             for (int i = 1; i < arr.Count(); i++)
             {
@@ -172,6 +180,18 @@ namespace TimePlaning
                 }
             }
             return minEvent;
+        }
+
+        private class EventToTime
+        {
+            public int time;
+            public EventComponent evt;
+
+            public EventToTime(int time, EventComponent evt)
+            {
+                this.time = time;
+                this.evt = evt;
+            }
         }
     }
 }

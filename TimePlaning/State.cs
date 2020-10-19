@@ -25,5 +25,15 @@ namespace TimePlaning
         {
             return data[key];
         }
+
+        internal Context Clone()
+        {
+            Context copy = new Context();
+            foreach(var raw in data)
+            {
+                copy.Set(raw.Key, raw.Value);
+            }
+            return copy;
+        }
     }
 }

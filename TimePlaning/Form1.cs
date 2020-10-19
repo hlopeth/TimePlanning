@@ -60,6 +60,8 @@ namespace TimePlaning
             showLog(listBoxBuierLog, BuierPool());
             showLog(listBoxShopLog, ShopPool());
             showLog(listBoxBankLog, BankPool());
+
+            lQuants.Text = BankPool().context.Get("quants").ToString();
         }
 
         private void showLog(ListBox listBox, Pool pool)
@@ -73,14 +75,11 @@ namespace TimePlaning
 
         private void showMessages(ListBox listBox, Pool pool)
         {
-            var queues = pool.getEventQueues();
+            var queue = pool.getEventQueue();
             listBox.Items.Clear();
-            foreach (var queue in queues)
+            foreach(var evt in queue)
             {
-                foreach(var evt in queue)
-                {
-                    listBox.Items.Add(evt.GetTime().ToString() + " : " + evt.getDiscription());
-                }
+                listBox.Items.Add(evt.GetTime().ToString() + " : " + evt.getDiscription());
             }
         }
 
@@ -88,42 +87,45 @@ namespace TimePlaning
         {
             Pool pool = obj as Pool;
             int poolIndex = Array.IndexOf<Pool>(pools, pool);
-            Context context = pool.context;
-            const int lookahead = 1;
 
             List<EventComponent> closestEvents = new List<EventComponent>();
             List<int> closestEventsQueueIndices = new List<int>();
 
             Random rnd = new Random();
 
-            //отправляем нулевые сообщения что бы показать что мы готовы
-            foreach (var otherPool in pools)
-            {
-                sendEvent(pool, otherPool, new NullEvent(lookahead));
-            }
+            //сохраняем начальное состояние
+            pool.SaveState();
 
             while (pool.Time < pool.endModelTime && !pool.shouldClose)
             {
-                var quants = context.Get("quants");
-                if (quants == 0)
+                if (pool == BankPool())
                 {
-                    continue;
+                    var a = 0;
                 }
-                context.Set("quants", quants - 1);
-
-
-                if(!pool.HasEventOnEachLine())
+                var quants = pool.context.Get("quants");
+                if (quants == 0)
                 {
                     continue;
                 }
 
                 //отрабатываетм текущие сообщения
                 pool.ClosestEvent(closestEvents, closestEventsQueueIndices);
+
+                if(closestEvents.Count > 0)
+                {
+                    pool.SaveState();
+                }
+
                 for (int i = 0; i < closestEvents.Count; i++)
                 {
                     int queueIndex = closestEventsQueueIndices[i];
                     var closestEvent = closestEvents[i];
-                    pool.RemoveEvent(queueIndex, closestEvent);
+                    pool.RemoveEvent(closestEvent);
+
+                    if(pool.Time > closestEvent.GetTime())
+                    {
+                        pool.RevertToState(closestEvent.GetTime());
+                    }
                     pool.Time = closestEvent.GetTime();
                     List<EventComponent> newEvents = new List<EventComponent>();
                     pool.DoEvent(closestEvent, newEvents);
@@ -133,11 +135,7 @@ namespace TimePlaning
                     }
                 }
                 
-                //рассылаем нулевые сообщения
-                foreach (var otherPool in pools)
-                {
-                    sendEvent(pool, otherPool, new NullEvent(pool.Time + lookahead));
-                }
+                pool.context.Set("quants", quants - 1);
                 int sleepTime = Convert.ToInt32(rnd.NextDouble() * 1000) + 500;
                 Thread.Sleep(sleepTime);
             }
@@ -161,7 +159,7 @@ namespace TimePlaning
         public static void sendEvent(Pool sender, Pool reciver, EventComponent evt)
         {
             int queueIndex = Array.IndexOf<Pool>(pools, sender);
-            reciver.AddEvent(queueIndex, evt);
+            reciver.AddEvent(evt);
         }
 
 
@@ -173,16 +171,16 @@ namespace TimePlaning
 
         private void button2_Click(object sender, EventArgs e)
         {
-            var buierPool = pools[0];
-            var bankPool = pools[2];
+            var buierPool = BuierPool();
+            var bankPool = BankPool();
             int moneyToGet = Convert.ToInt32(nudMoneyToGet.Value);
-            int planedTime = bankPool.Time + 5;
+            int planedTime = buierPool.Time + 2;
             sendEvent(buierPool, bankPool, new GetMoneyEvent(planedTime, moneyToGet, buierPool, bankPool));
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int planedTime = ShopPool().Time + 2;
+            int planedTime = ShopPool().Time + 10;
             sendEvent(ShopPool(), BankPool(), new GetLoanEvent(planedTime, ShopPool(), BankPool()));
         }
 
