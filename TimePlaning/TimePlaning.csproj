@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuyEvent.cs" />
     <Compile Include="CloseEvent.cs" />
     <Compile Include="EventComponent.cs" />
     <Compile Include="Form1.cs">

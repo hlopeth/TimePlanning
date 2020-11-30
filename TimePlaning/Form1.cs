@@ -14,24 +14,35 @@ namespace TimePlaning
     public partial class Form1 : Form
     {
         static Pool[] pools;
+        const string PROBABILITY_GET_MONEY = "probabilityGetMoney";
+        const string PROBABILITY_BUY_CLOCK = "probabilityBuyClock";
+        const string PROBABILITY_BUY_CAR = "probabilityBuyCar";
         public Form1()
         {
             InitializeComponent();
 
             Pool buierPool = new Pool(500, 3, new Context());
-            Pool shopPool = new Pool(500, 3, new Context());
+            Pool clockShopPool = new Pool(500, 3, new Context());
+            Pool carShopPool = new Pool(500, 3, new Context());
             Pool bankPool = new Pool(500, 3, new Context());
+
+            pools = new Pool[] { buierPool, clockShopPool, bankPool, carShopPool };
 
             bankPool.context.Set("money", 1000);
             bankPool.context.Set("loans", 0);
-            buierPool.context.Set("quants", 0);
-            shopPool.context.Set("quants", 0);
-            bankPool.context.Set("quants", 0);
 
-            pools = new Pool[] { buierPool, shopPool, bankPool};
+            buierPool.context.Set(PROBABILITY_GET_MONEY, 33);
+            buierPool.context.Set(PROBABILITY_BUY_CLOCK, 33);
+            buierPool.context.Set(PROBABILITY_BUY_CAR, 33);
+            probabilityGetMoney.Value = 33;
+            probabilityBuyClock.Value = 33;
+            probabilityBuyCar.Value = 33;
+
+
 
             Thread buierThread = new Thread(new ParameterizedThreadStart(processThread));
-            Thread shopThread = new Thread(new ParameterizedThreadStart(processThread));
+            Thread clockShopThread = new Thread(new ParameterizedThreadStart(processThread));
+            Thread carShopThread = new Thread(new ParameterizedThreadStart(processThread));
             Thread bankThread = new Thread(new ParameterizedThreadStart(processThread));
 
             timerUI.Interval = 100;
@@ -39,14 +50,16 @@ namespace TimePlaning
             timerUI.Start();
 
             buierThread.Start(buierPool);
-            shopThread.Start(shopPool);
+            clockShopThread.Start(clockShopPool);
+            carShopThread.Start(carShopPool);
             bankThread.Start(bankPool);
         }
 
         private void updateUI(object sender, EventArgs e)
         { 
             labelBuierTime.Text = BuierPool().Time.ToString();
-            labelShopTime.Text = ShopPool().Time.ToString();
+            labelClockShopTime.Text = ClockShopPool().Time.ToString();
+            labelCarShopTime.Text = CarShopPool().Time.ToString();
             labelBankTime.Text = BankPool().Time.ToString();
 
             BankPool().semaphore.WaitOne();
@@ -55,13 +68,17 @@ namespace TimePlaning
             BankPool().semaphore.Release();
 
             showMessages(listBoxBuierMessages, BuierPool());
-            showMessages(listBoxShopMessages, ShopPool());
+            showMessages(listBoxClockShopMessages, ClockShopPool());
+            showMessages(listBoxCarShopMessages, CarShopPool());
             showMessages(listBoxBankMessages, BankPool());
             showLog(listBoxBuierLog, BuierPool());
-            showLog(listBoxShopLog, ShopPool());
+            showLog(listBoxClockShopLog, ClockShopPool());
+            showLog(listBoxCarShopLog, CarShopPool());
             showLog(listBoxBankLog, BankPool());
 
-            lQuants.Text = BankPool().context.Get("quants").ToString();
+            //labelBuierTime.Text = BuierPool().Time.ToString();
+            //labelClockShopTime.Text = ClockShopPool().Time.ToString();
+            //labelBankTime.Text = BankPool().Time.ToString();
         }
 
         private void showLog(ListBox listBox, Pool pool)
@@ -98,14 +115,40 @@ namespace TimePlaning
 
             while (pool.Time < pool.endModelTime && !pool.shouldClose)
             {
-                if (pool == BankPool())
+                if(pool == BuierPool())
                 {
-                    var a = 0;
-                }
-                var quants = pool.context.Get("quants");
-                if (quants == 0)
-                {
-                    continue;
+                    int probGetMoney = pool.context.Get(PROBABILITY_GET_MONEY);
+                    bool getMoney = (rnd.NextDouble() * 100) < probGetMoney;
+                    if(getMoney)
+                    {
+                        sendEvent(
+                            pool, 
+                            BankPool(), 
+                            new GetMoneyEvent(pool.Time + 3, 100, pool, BankPool())
+                            );
+                    }
+
+                    int probByuClock = pool.context.Get(PROBABILITY_BUY_CLOCK);
+                    bool buyClock = (rnd.NextDouble() * 100) < probByuClock;
+                    if(buyClock)
+                    {
+                        sendEvent(
+                            pool,
+                            ClockShopPool(),
+                            new BuyEvent(pool.Time + 5, pool, ClockShopPool(), BankPool())
+                            );
+                    }
+
+                    int probBuyCar = pool.context.Get(PROBABILITY_BUY_CAR);
+                    bool buyCar = (rnd.NextDouble() * 100) < probBuyCar;
+                    if(buyCar)
+                    {
+                        sendEvent(
+                            pool,
+                            CarShopPool(),
+                            new BuyEvent(pool.Time + 5, pool, CarShopPool(), BankPool())
+                            );
+                    }
                 }
 
                 //отрабатываетм текущие сообщения
@@ -135,9 +178,9 @@ namespace TimePlaning
                     }
                 }
                 
-                pool.context.Set("quants", quants - 1);
                 int sleepTime = Convert.ToInt32(rnd.NextDouble() * 1000) + 500;
                 Thread.Sleep(sleepTime);
+                pool.Time += 1;
             }
         }
 
@@ -146,9 +189,14 @@ namespace TimePlaning
             return pools[0];
         }
 
-        private Pool ShopPool()
+        private Pool ClockShopPool()
         {
             return pools[1];
+        }
+
+        private Pool CarShopPool()
+        {
+            return pools[3];
         }
 
         private Pool BankPool()
@@ -173,34 +221,39 @@ namespace TimePlaning
         {
             var buierPool = BuierPool();
             var bankPool = BankPool();
-            int moneyToGet = Convert.ToInt32(nudMoneyToGet.Value);
+            int moneyToGet = Convert.ToInt32(probabilityGetMoney.Value);
             int planedTime = buierPool.Time + 2;
             sendEvent(buierPool, bankPool, new GetMoneyEvent(planedTime, moneyToGet, buierPool, bankPool));
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            int planedTime = ShopPool().Time + 10;
-            sendEvent(ShopPool(), BankPool(), new GetLoanEvent(planedTime, ShopPool(), BankPool()));
+            int planedTime = ClockShopPool().Time + 10;
+            sendEvent(ClockShopPool(), BankPool(), new GetLoanEvent(planedTime, ClockShopPool(), BankPool()));
         }
 
-        private void button_AddTimeBuier_Click(object sender, EventArgs e)
+        private void probabilityGetMoney_ValueChanged(object sender, EventArgs e)
         {
-            var quants = BuierPool().context.Get("quants");
-            BuierPool().context.Set("quants", quants + 1);
+            BuierPool().context.Set(
+                PROBABILITY_GET_MONEY,
+                Convert.ToInt32(probabilityGetMoney.Value)
+                );
         }
 
-        private void button_AddTimeShop_Click(object sender, EventArgs e)
+        private void probabilityBuyClock_ValueChanged(object sender, EventArgs e)
         {
-            var quants = ShopPool().context.Get("quants");
-            ShopPool().context.Set("quants", quants + 1);
+            BuierPool().context.Set(
+                PROBABILITY_BUY_CLOCK,
+                Convert.ToInt32(probabilityBuyClock.Value)
+                );
         }
 
-        private void button_AddTimeBank_Click(object sender, EventArgs e)
+        private void probabilityBuyCar_ValueChanged(object sender, EventArgs e)
         {
-
-            var quants = BankPool().context.Get("quants");
-            BankPool().context.Set("quants", quants + 1);
+            BuierPool().context.Set(
+                PROBABILITY_BUY_CAR,
+                Convert.ToInt32(probabilityBuyCar.Value)
+                );
         }
     }
 }
